@@ -2,9 +2,9 @@
 
 Corresponding video: <https://youtu.be/luOgEhLE2sg>
 
-Manual Installation Requirements:
+Manual installation requirements:
 
-- Install SurrealDB `brew install surrealdb/tap/surreal`
-- Add the wasm target `rustup target add wasm32-unknown-unknown`
-- Install trunk `brew install trunk`
-- Install `tauri-cli` with `cargo install tauri-cli`
+- Install SurrealDB: `brew install surrealdb/tap/surreal`
+- Add the Rust wasm compilation target: `rustup target add wasm32-unknown-unknown`
+- Install `trunk`: `brew install trunk`
+- Install the `tauri-cli` crate: `cargo install tauri-cli`
