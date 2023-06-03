@@ -1,0 +1,12 @@
+{
+    "cSpell.words": [
+        "bindgen",
+        "chrono",
+        "reqwasm",
+        "rustup",
+        "serde",
+        "surrealdb",
+        "tauri",
+        "wasmbind"
+    ]
+}
