@@ -10,11 +10,22 @@ use crate::db::{AffectedRows, DB};
 
 use cors::*;
 
+mod cors;
 mod db;
 mod error;
 mod prelude;
 mod utils;
-mod cors;
+
+#[get("/health")]
+async fn get_health(db: &State<DB>) -> Result<Json<Object>, std::io::Error> {
+    println!("DEBUGGING: get_health");
+    let health_check = db
+        .is_connection_alive()
+        .await
+        .map_err(|_| std::io::Error::new(ErrorKind::Other, "Database connection issue."))?;
+
+    Ok(Json(health_check))
+}
 
 #[post("/task/<title>")]
 async fn add_task(title: String, db: &State<DB>) -> Result<Json<Object>, std::io::Error> {
@@ -69,15 +80,22 @@ async fn delete_task(id: String, db: &State<DB>) -> Result<Json<AffectedRows>, s
 #[launch]
 async fn rocket() -> _ {
     let ds = Arc::new(Datastore::new("memory").await.unwrap());
-    let sesh = Session::for_db("my_ns", "my_db");
+    let session = dbg!(Session::for_db("my_ns", "my_db"));
 
-    let db = DB { ds, sesh };
+    let db = DB { ds, session };
 
     rocket::build()
         .mount(
             "/",
-            routes![add_task, get_task, get_all_tasks, toggle_task, delete_task],
+            routes![
+                get_health,
+                add_task,
+                get_task,
+                get_all_tasks,
+                toggle_task,
+                delete_task
+            ],
         )
-        .attach(CORS)
+        .attach(Cors)
         .manage(db)
 }

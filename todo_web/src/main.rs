@@ -42,7 +42,7 @@ fn app() -> Html {
     };
 
     let on_toggle_task = {
-        let tasks_controller = tasks_controller.clone();
+        let tasks_controller = tasks_controller;
         Callback::from(move |id: String| {
             tasks_controller.toggle_task(id);
         })

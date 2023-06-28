@@ -7,6 +7,7 @@
         "serde",
         "surrealdb",
         "tauri",
+        "thiserror",
         "wasmbind"
     ]
 }

@@ -54,7 +54,7 @@ pub trait Creatable: Into<Value> {}
 #[derive(Clone)]
 pub struct DB {
     pub ds: Arc<Datastore>,
-    pub sesh: Session,
+    pub session: Session,
 }
 
 impl DB {
@@ -63,8 +63,14 @@ impl DB {
         query: &str,
         vars: Option<BTreeMap<String, Value>>,
     ) -> Result<Vec<Response>, crate::error::Error> {
-        let res = self.ds.execute(query, &self.sesh, vars, false).await?;
+        let res = self.ds.execute(query, &self.session, vars, false).await?;
         Ok(res)
+    }
+
+    pub async fn is_connection_alive(&self) -> Result<Object, crate::error::Error> {
+        let res = dbg!(self.execute("SELECT 1", None).await?);
+        let first_res: Response = res.into_iter().next().expect("Did not get a response");
+        W(first_res.result?.first()).try_into()
     }
 
     pub async fn add_task(&self, title: String) -> Result<Object, crate::error::Error> {
@@ -79,11 +85,11 @@ impl DB {
 
     pub async fn get_task(&self, id: String) -> Result<Object, crate::error::Error> {
         let sql = "SELECT * FROM $th";
-        let tid = format!("{}", id);
+        let tid = id.to_string();
         let vars: BTreeMap<String, Value> = map!["th".into() => thing(&tid)?.into()];
-        let ress = self.execute(sql, Some(vars)).await?;
+        let res = self.execute(sql, Some(vars)).await?;
 
-        let first_res = ress.into_iter().next().expect("Did not get a response");
+        let first_res = res.into_iter().next().expect("Did not get a response");
 
         W(first_res.result?.first()).try_into()
     }
@@ -102,7 +108,7 @@ impl DB {
 
     pub async fn toggle_task(&self, id: String) -> Result<AffectedRows, crate::error::Error> {
         let sql = "UPDATE $th SET completed = function() { return !this.completed; }";
-        let tid = format!("{}", id);
+        let tid = id.to_string();
         let vars: BTreeMap<String, Value> = map!["th".into() => thing(&tid)?.into()];
         let _ = self.execute(sql, Some(vars)).await?;
 
@@ -111,7 +117,7 @@ impl DB {
 
     pub async fn delete_task(&self, id: String) -> Result<AffectedRows, crate::error::Error> {
         let sql = "Delete $th";
-        let tid = format!("{}", id);
+        let tid = id.to_string();
         let vars: BTreeMap<String, Value> = map!["th".into() => thing(&tid)?.into()];
         let _ = self.execute(sql, Some(vars)).await?;
 
